@@ -1,36 +1,94 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# FaviconKit
 
-## Getting Started
+이미지 한 장을 업로드하면 파비콘, 앱 아이콘, manifest, head snippet을 생성하여 ZIP 파일로 다운로드할 수 있는 웹 도구입니다.
 
-First, run the development server:
+## 주요 기능
+
+- PNG/JPEG 이미지 업로드 (최대 8MB)
+- 6가지 사이즈 자동 생성 (16, 32, 48, 180, 192, 512px)
+- favicon.ico 자동 생성 (16/32/48px 포함)
+- 2가지 프리셋 지원
+  - **Classic Web** — `public/` 디렉토리 구조 + head-snippet.html
+  - **Next.js App Router** — `app/` + `public/` 디렉토리 구조 + manifest.ts
+- 배경색, 패딩, fit(contain/cover) 옵션
+- 실시간 캔버스 프리뷰
+- ZIP 다운로드 (새 탭에서 네이티브 attachment)
+
+## 기술 스택
+
+| 영역 | 기술 |
+|------|------|
+| 프레임워크 | Next.js 16 (App Router) |
+| 언어 | TypeScript 5 (strict) |
+| 스타일링 | Tailwind CSS v4 |
+| 이미지 처리 | sharp (서버사이드) |
+| ICO 생성 | png-to-ico |
+| ZIP 생성 | archiver |
+| 아이콘 | lucide-react |
+| 패키지 매니저 | pnpm |
+
+## 시작하기
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
+# 의존성 설치
+pnpm install
+
+# 개발 서버 실행
 pnpm dev
-# or
-bun dev
+
+# 프로덕션 빌드
+pnpm build
+
+# 프로덕션 서버 실행
+pnpm start
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## 프로젝트 구조
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```
+app/
+├── api/generate/route.ts       # POST /api/generate - ZIP 생성 API
+├── components/
+│   ├── upload-form.tsx          # 드래그앤드롭 업로드 + HTML form
+│   ├── options-panel.tsx        # 옵션 컨트롤 (프리셋, fit, 패딩, 배경색 등)
+│   └── preview-panel.tsx        # 캔버스 기반 실시간 프리뷰
+├── lib/
+│   ├── validation.ts            # 타입 정의 + 스키마 유효성 검증
+│   ├── generate-icons.ts        # 1024px 베이스 캔버스 → 멀티사이즈 아이콘
+│   ├── generate-manifest.ts     # manifest, head-snippet, README 텍스트 생성
+│   └── build-zip.ts             # 프리셋별 ZIP 조립
+├── page.tsx                     # 메인 페이지
+├── layout.tsx                   # 루트 레이아웃
+└── globals.css                  # Tailwind CSS
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## API
 
-## Learn More
+### `POST /api/generate`
 
-To learn more about Next.js, take a look at the following resources:
+이미지와 옵션을 받아 ZIP 파일을 반환합니다.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+**Request:** `multipart/form-data`
+- `image` — PNG 또는 JPEG 파일 (최대 8MB)
+- `options` — JSON 문자열 (선택)
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+**Options:**
 
-## Deploy on Vercel
+| 필드 | 타입 | 기본값 | 설명 |
+|------|------|--------|------|
+| preset | `"classic-web"` \| `"nextjs-app-router"` | `"classic-web"` | ZIP 출력 구조 |
+| fit | `"contain"` \| `"cover"` | `"contain"` | 이미지 맞춤 방식 |
+| paddingPct | `0` ~ `0.2` | `0` | 아이콘 내부 여백 비율 |
+| background | `"transparent"` \| `"#RRGGBB"` | `"transparent"` | 배경색 |
+| appName | string | `"My App"` | manifest name |
+| shortName | string | `"MyApp"` | manifest short_name |
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+**Response:**
+- `200` — `application/zip` (attachment)
+- `400` — `{ "error": "VALIDATION_ERROR", "details": "..." }`
+- `413` — `{ "error": "FILE_TOO_LARGE" }`
+- `500` — `{ "error": "INTERNAL_ERROR" }`
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## 라이선스
+
+MIT
