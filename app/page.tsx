@@ -1,5 +1,6 @@
 "use client";
 
+import { KakaoAdFit } from "@/app/components/kakao-adfit";
 import { OptionsPanel } from "@/app/components/options-panel";
 import { PreviewPanel } from "@/app/components/preview-panel";
 import { UploadForm } from "@/app/components/upload-form";
@@ -13,6 +14,21 @@ export default function Home() {
 
   return (
     <div className="flex min-h-screen flex-col bg-white dark:bg-zinc-950">
+      {/* AdFit - Mobile Top Banner */}
+      <div className="flex justify-center xl:hidden">
+        <KakaoAdFit unit="DAN-yqlPcmi0FcmMsCT3" width={320} height={100} />
+      </div>
+
+      {/* AdFit - Left Sidebar */}
+      <div className="fixed left-4 top-1/2 z-20 hidden -translate-y-1/2 xl:block">
+        <KakaoAdFit unit="DAN-IAekLSsQbum86vEe" width={160} height={600} />
+      </div>
+
+      {/* AdFit - Right Sidebar */}
+      <div className="fixed right-4 top-1/2 z-20 hidden -translate-y-1/2 xl:block">
+        <KakaoAdFit unit="DAN-sBjDQzTZuuaDoRBl" width={160} height={600} />
+      </div>
+
       {/* Header */}
       <header className="border-b border-zinc-100 dark:border-zinc-800">
         <div className="mx-auto flex max-w-5xl items-center justify-between px-6 py-4">
